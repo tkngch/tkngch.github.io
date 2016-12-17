@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Dirichlet process mixture model as a cognitive model of category learning &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="http://replace-this-with-your-hugo-site.com/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="http://replace-this-with-your-hugo-site.com/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Behavioural Modeling and Data Science  </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Dirichlet process mixture model as a cognitive model of category learning
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2016-12-17T15:30:10Z">
+                17 Dec 2016
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="http://replace-this-with-your-hugo-site.com//tags/bayes">
+                    #Bayes
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="http://replace-this-with-your-hugo-site.com//tags/cognitive-science">
+                    #cognitive science
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        
+
+<p>In cognitive science/psychology, Dirichlet process mixture model (DPMM) is
+considered as a rational model of category learning (Anderson, 1991; Sanborn,
+Griffiths &amp; Navarro, 2010). That is, the DPMM is used to approximate how human
+learns to categorise objects.</p>
+
+<p>In this post, I review the DPMM, assuming that all the features are discrete.
+The implementation in C++ can be found
+<a href="https://github.com/tkngch/dirichlet-process-mixture-model">here</a>.</p>
+
+<p>Suppose a learner has observed $n - 1$ objects $\{x_{1}, x_{2}, \dots, x_{n -
+1}\}$ with corresponding category labels $\{y_{1}, y_{2}, \dots, y_{n - 1}\}$.
+In the DPMM, each of these objects fits into a cluster. The cluster label for
+the $i$th object is denoted as $z_{i}$.</p>
+
+<h2 id="drawing-an-inference">Drawing an inference</h2>
+
+<p>Then, the probability that the $n$th object fits into category $w$ is expressed
+as follows:</p>
+
+<p>[
+\begin{align}
+    p(y_{n} = w \; \vert \; x_{n})
+    &amp;= \sum_{k \in \mathbb{Z}} p(z_{n} = k \; \vert \; x_{n}) \; p(y_{n} = w \; \vert \; z_{n} = k) \\<br />
+    &amp;= \sum_{k \in \mathbb{Z}} \; \frac{p(z_{n} = k) \; p(x_{n} \;\vert\; z_{n} = k)}{p(x_{n})} \; p(y_{n} = w \; \vert \; z_{n} =
+    k) \\<br />
+    &amp;= \sum_{k \in \mathbb{Z}} \; \frac{p(z_{n} = k) \; p(x_{n} \;\vert\; z_{n} = k)}{\sum_{s \in
+    \mathbb{Z}} \; p(z_{n} = s) \; p(x_{n} \;\vert\; z_{n} = s)} \; p(y_{n} = w \; \vert \; z_{n} = k).
+\label{eqn:inference} \tag{1}
+\end{align}
+]</p>
+
+<p>Here, $\mathbb{Z}$ is a set of all the possible clusters to which the $n$th
+object can be assigned.  The three terms in Equation $\ref{eqn:inference}$ are
+described below in turn.</p>
+
+<p>First, the probability that the $n$th object fits into a cluster $k$ is given
+by:
+[
+    p(z_{n} = k) =
+        \begin{cases}
+            \frac{c\,m_{k}}{(1 - c) + c\,(n - 1)} &amp; \text{if $m_{k} &gt; 0$}\\<br />
+            \\<br />
+            \frac{(1 - c)}{(1 - c) + c\,(n - 1)} &amp; \text{if $m_{k} = 0$}
+        \end{cases}
+\label{eqn:prior}\tag{2}
+]
+where $c$ is a parameter called the coupling probability and $m_{k}$ is the
+number of objects assigned into cluster $k$.</p>
+
+<p>In typical experiments in cognitive science/psychology, each feature is
+independent.  Therefore,
+[
+    p(x_{n} \; \vert \; z_{n} = k) = \prod_{d \in D} p(x_{n,d} \; \vert \; z_{n} = k),
+\label{eqn:feature1}\tag{3}
+]
+where $D$ is a set of features that describe $x$.  The above term is computed
+with
+[
+    p(x_{n,d} = v \; \vert \; z = k) = \frac{B_{v,d} + \beta_{c}}{m_{k} + J_{d} \, \beta_{c}},
+\label{eqn:feature2}\tag{4}
+]
+where $B_{v,d}$ is the number of objects in cluster $k$ with value of $v$ on
+feature $d$, and $J_{d}$ is the number of values which an object can take on
+feature $d$.</p>
+
+<p>Similarly, the probability that the $n$th object has category label $w$, given
+a cluster, is given by:
+[
+    p(y_{n} = w \; \vert \; z = k) = \frac{B_{w} + \beta_{l}}{B_{.} + J \, \beta_{l}},
+\label{eqn:label}\tag{5}
+]
+where $B_{w}$ is the number of observed objects with category label $w$ in
+cluster $k$, $B_{.}$ is the number of objects in cluster $k$, and $J$ is the
+number of possible category labels.</p>
+
+<h2 id="learning">Learning</h2>
+
+<p>The learning in the DPMM is equivalent to assigning an object into a cluster.
+The cluster assignment of the $n$th object, for example, is in accordance with
+the probability of each cluster. Specifically, an object is assigned to a
+cluster with the probability:
+[
+    p(z_{n} = k \;\vert\; x_{n},\, y_{n}) \propto
+    p(z_{n} = k)
+    \;
+    p(x_{n} \;\vert\; z_{n} = k)
+    \;
+    p(y_{n} \;\vert\; z_{n} = k)
+\label{eqn:learning}\tag{6}
+]
+This is computed with Equations $\ref{eqn:prior}$, $\ref{eqn:feature1}$ and
+$\ref{eqn:label}$.</p>
+
+<p>This learning is mathematically intractable and approximated with local MAP
+(Anderson, 1991) and particle filter (Sanborn et al., 2010).</p>
+
+<h2 id="references">References</h2>
+
+<p>Anderson, J. R. (1991). The adaptive nature of human categorization.
+<em>Psychological Review, 98,</em> 409-29.</p>
+
+<p>Sanborn, A. N., Griffiths, T. L., &amp; Navarro, D. J. (2010). Rational
+approximations to rational models: alternative algorithms for category
+learning. <em>Psychological Review, 117,</em> 1144-1167.</p>
+
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous disabled">
+                <a href="#">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next disabled">
+                <a href="#">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+

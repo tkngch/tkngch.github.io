@@ -1,0 +1,182 @@
+main {
+    /* max-width: 750px; */
+    word-wrap: break-word;
+}
+
+.base00-background { background-color: #231f20; }
+.base01-background { background-color: #1c3f95; }
+.base02-background { background-color: #5a5758; }
+.base03-background { background-color: #737171; }
+.base04-background { background-color: #959ca1; }
+.base05-background { background-color: #d9d8d8; }
+.base06-background { background-color: #e7e7e8; }
+.base07-background { background-color: #ffffff; }
+.base08-background { background-color: #ee2e24; }
+.base09-background { background-color: #f386a1; }
+.base0A-background { background-color: #ffd204; }
+.base0B-background { background-color: #00853e; }
+.base0C-background { background-color: #85cebc; }
+.base0D-background { background-color: #009ddc; }
+.base0E-background { background-color: #98005d; }
+.base0F-background { background-color: #b06110; }
+
+.base00 { color: #231f20; }
+.base01 { color: #1c3f95; }
+.base02 { color: #5a5758; }
+.base03 { color: #737171; }
+.base04 { color: #959ca1; }
+.base05 { color: #d9d8d8; }
+.base06 { color: #e7e7e8; }
+.base07 { color: #ffffff; }
+.base08 { color: #ee2e24; }
+.base09 { color: #f386a1; }
+.base0A { color: #ffd204; }
+.base0B { color: #00853e; }
+.base0C { color: #85cebc; }
+.base0D { color: #009ddc; }
+.base0E { color: #98005d; }
+.base0F { color: #b06110; }
+
+
+/* colour01 is white */
+.colour01 { color: #ffffff; }
+.colour01Background { background-color: #ffffff; }
+
+/* colour02 is dark-ish blue */
+.colour02 { color: #1c3f95; }
+.colour02Background { background-color: #1c3f95; }
+
+/* colour03 is grey */
+.colour03 { color: #959ca1; }
+.colour03background { background-color: #959ca1; }
+.colour03border { border: 0.1em solid #959ca1; }
+
+/* colour04 is black */
+.colour04 { color: #231f20; }
+
+
+/* Header */
+
+.global-header {
+}
+
+.header {
+    position: relative;
+    text-align: center;
+    padding: 0.1em;
+    margin: 0em;
+    border: 0em;
+}
+
+a {
+    color: inherit;
+    text-decoration: none !important;
+}
+
+
+/* Footer */
+
+.global-footer {
+    margin-top: 0.2em;
+    padding-top: 0.2em;
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+
+/* li.html single.html */
+
+.article-list h2 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.article-list h2 {
+    margin-bottom: 0em;
+}
+
+.article-date {
+    padding: 0em;
+    margin-bottom: 0.2em;
+}
+
+.article-tag a {
+    padding: 0.1em 0.5em;
+    margin: 0 0.2em;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 1em;
+    text-decoration: none;
+    transition: color,border-color,background-color 0.1s linear;
+}
+
+.article-tag a:hover {
+    background-color: #959ca1;
+    color: #ffffff;
+}
+
+.article-title {
+    margin-bottom: 1em;
+}
+
+
+/* sidebar */
+.sidebar {
+    /* float: right; */
+    /* width: 250px; */
+    /* overflow: hidden; */
+}
+.sidebar-content {
+    margin-left: 1em;
+    margin-bottom: 1em;
+}
+
+.sidebar-header {
+    margin-top: 1em;
+    border-bottom: 0.1em solid rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-tag-list {
+    margin: 0.2em;
+}
+
+
+/* Pagination */
+/* TODO when I have enough entries to spread across pages. */
+
+.pagination
+{
+    width: 720px;
+    text-align: center;
+}
+
+.older-posts,.newer-posts
+{
+    display: inline!important;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    text-decoration: none;
+    transition: border .3s ease;
+    padding: 5px 14px;
+}
+
+.page-number
+{
+    display: inline-block;
+    min-width: 100px;
+    padding: 2px 0;
+}
+
+.newer-posts
+{
+    float: left;
+}
+
+.older-posts
+{
+    float: right;
+}
+
+.older-posts:hover,.newer-posts:hover
+{
+    color: #889093;
+    border-color: #98a0a4;
+}

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Not Much of a Blog</title>
+    <link>http://replace-this-with-your-hugo-site.com/post/</link>
+    <description>Recent content in Posts on Not Much of a Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
+    <lastBuildDate>Sat, 17 Dec 2016 15:30:10 +0000</lastBuildDate>
+    <atom:link href="http://replace-this-with-your-hugo-site.com/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Dirichlet process mixture model as a cognitive model of category learning</title>
+      <link>http://replace-this-with-your-hugo-site.com/post/2016-12-17/</link>
+      <pubDate>Sat, 17 Dec 2016 15:30:10 +0000</pubDate>
+      
+      <guid>http://replace-this-with-your-hugo-site.com/post/2016-12-17/</guid>
+      <description>
+
+&lt;p&gt;In cognitive science/psychology, Dirichlet process mixture model (DPMM) is
+considered as a rational model of category learning (Anderson, 1991; Sanborn,
+Griffiths &amp;amp; Navarro, 2010). That is, the DPMM is used to approximate how human
+learns to categorise objects.&lt;/p&gt;
+
+&lt;p&gt;In this post, I review the DPMM, assuming that all the features are discrete.
+The implementation in C++ can be found
+&lt;a href=&#34;https://github.com/tkngch/dirichlet-process-mixture-model&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Suppose a learner has observed $n - 1$ objects $\{x_{1}, x_{2}, \dots, x_{n -
+1}\}$ with corresponding category labels $\{y_{1}, y_{2}, \dots, y_{n - 1}\}$.
+In the DPMM, each of these objects fits into a cluster. The cluster label for
+the $i$th object is denoted as $z_{i}$.&lt;/p&gt;
+
+&lt;h2 id=&#34;drawing-an-inference&#34;&gt;Drawing an inference&lt;/h2&gt;
+
+&lt;p&gt;Then, the probability that the $n$th object fits into category $w$ is expressed
+as follows:&lt;/p&gt;
+
+&lt;p&gt;[
+\begin{align}
+    p(y_{n} = w \; \vert \; x_{n})
+    &amp;amp;= \sum_{k \in \mathbb{Z}} p(z_{n} = k \; \vert \; x_{n}) \; p(y_{n} = w \; \vert \; z_{n} = k) \\&lt;br /&gt;
+    &amp;amp;= \sum_{k \in \mathbb{Z}} \; \frac{p(z_{n} = k) \; p(x_{n} \;\vert\; z_{n} = k)}{p(x_{n})} \; p(y_{n} = w \; \vert \; z_{n} =
+    k) \\&lt;br /&gt;
+    &amp;amp;= \sum_{k \in \mathbb{Z}} \; \frac{p(z_{n} = k) \; p(x_{n} \;\vert\; z_{n} = k)}{\sum_{s \in
+    \mathbb{Z}} \; p(z_{n} = s) \; p(x_{n} \;\vert\; z_{n} = s)} \; p(y_{n} = w \; \vert \; z_{n} = k).
+\label{eqn:inference} \tag{1}
+\end{align}
+]&lt;/p&gt;
+
+&lt;p&gt;Here, $\mathbb{Z}$ is a set of all the possible clusters to which the $n$th
+object can be assigned.  The three terms in Equation $\ref{eqn:inference}$ are
+described below in turn.&lt;/p&gt;
+
+&lt;p&gt;First, the probability that the $n$th object fits into a cluster $k$ is given
+by:
+[
+    p(z_{n} = k) =
+        \begin{cases}
+            \frac{c\,m_{k}}{(1 - c) + c\,(n - 1)} &amp;amp; \text{if $m_{k} &amp;gt; 0$}\\&lt;br /&gt;
+            \\&lt;br /&gt;
+            \frac{(1 - c)}{(1 - c) + c\,(n - 1)} &amp;amp; \text{if $m_{k} = 0$}
+        \end{cases}
+\label{eqn:prior}\tag{2}
+]
+where $c$ is a parameter called the coupling probability and $m_{k}$ is the
+number of objects assigned into cluster $k$.&lt;/p&gt;
+
+&lt;p&gt;In typical experiments in cognitive science/psychology, each feature is
+independent.  Therefore,
+[
+    p(x_{n} \; \vert \; z_{n} = k) = \prod_{d \in D} p(x_{n,d} \; \vert \; z_{n} = k),
+\label{eqn:feature1}\tag{3}
+]
+where $D$ is a set of features that describe $x$.  The above term is computed
+with
+[
+    p(x_{n,d} = v \; \vert \; z = k) = \frac{B_{v,d} + \beta_{c}}{m_{k} + J_{d} \, \beta_{c}},
+\label{eqn:feature2}\tag{4}
+]
+where $B_{v,d}$ is the number of objects in cluster $k$ with value of $v$ on
+feature $d$, and $J_{d}$ is the number of values which an object can take on
+feature $d$.&lt;/p&gt;
+
+&lt;p&gt;Similarly, the probability that the $n$th object has category label $w$, given
+a cluster, is given by:
+[
+    p(y_{n} = w \; \vert \; z = k) = \frac{B_{w} + \beta_{l}}{B_{.} + J \, \beta_{l}},
+\label{eqn:label}\tag{5}
+]
+where $B_{w}$ is the number of observed objects with category label $w$ in
+cluster $k$, $B_{.}$ is the number of objects in cluster $k$, and $J$ is the
+number of possible category labels.&lt;/p&gt;
+
+&lt;h2 id=&#34;learning&#34;&gt;Learning&lt;/h2&gt;
+
+&lt;p&gt;The learning in the DPMM is equivalent to assigning an object into a cluster.
+The cluster assignment of the $n$th object, for example, is in accordance with
+the probability of each cluster. Specifically, an object is assigned to a
+cluster with the probability:
+[
+    p(z_{n} = k \;\vert\; x_{n},\, y_{n}) \propto
+    p(z_{n} = k)
+    \;
+    p(x_{n} \;\vert\; z_{n} = k)
+    \;
+    p(y_{n} \;\vert\; z_{n} = k)
+\label{eqn:learning}\tag{6}
+]
+This is computed with Equations $\ref{eqn:prior}$, $\ref{eqn:feature1}$ and
+$\ref{eqn:label}$.&lt;/p&gt;
+
+&lt;p&gt;This learning is mathematically intractable and approximated with local MAP
+(Anderson, 1991) and particle filter (Sanborn et al., 2010).&lt;/p&gt;
+
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;Anderson, J. R. (1991). The adaptive nature of human categorization.
+&lt;em&gt;Psychological Review, 98,&lt;/em&gt; 409-29.&lt;/p&gt;
+
+&lt;p&gt;Sanborn, A. N., Griffiths, T. L., &amp;amp; Navarro, D. J. (2010). Rational
+approximations to rational models: alternative algorithms for category
+learning. &lt;em&gt;Psychological Review, 117,&lt;/em&gt; 1144-1167.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
