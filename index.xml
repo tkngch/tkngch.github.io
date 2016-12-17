@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Not Much of a Blog</title>
-    <link>http://replace-this-with-your-hugo-site.com/</link>
+    <link>https://tkngch.github.io/</link>
     <description>Recent content on Not Much of a Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
     <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
     <lastBuildDate>Sat, 17 Dec 2016 15:30:10 +0000</lastBuildDate>
-    <atom:link href="http://replace-this-with-your-hugo-site.com/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://tkngch.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dirichlet process mixture model as a cognitive model of category learning</title>
-      <link>http://replace-this-with-your-hugo-site.com/post/2016-12-17/</link>
+      <link>https://tkngch.github.io/post/2016-12-17/</link>
       <pubDate>Sat, 17 Dec 2016 15:30:10 +0000</pubDate>
       
-      <guid>http://replace-this-with-your-hugo-site.com/post/2016-12-17/</guid>
+      <guid>https://tkngch.github.io/post/2016-12-17/</guid>
       <description>
 
 &lt;p&gt;In cognitive science/psychology, Dirichlet process mixture model (DPMM) is
