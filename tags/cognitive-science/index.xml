@@ -2,12 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Cognitive Science on Not Much of a Blog</title>
-    <link>https://tkngch.github.io/tags/cognitive-science/</link>
+    <link>https://tkngch.github.io/tags/cognitive-science/index.xml</link>
     <description>Recent content in Cognitive Science on Not Much of a Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
     <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
-    <lastBuildDate>Sat, 17 Dec 2016 15:30:10 +0000</lastBuildDate>
     <atom:link href="https://tkngch.github.io/tags/cognitive-science/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
@@ -16,9 +15,7 @@
       <pubDate>Sat, 17 Dec 2016 15:30:10 +0000</pubDate>
       
       <guid>https://tkngch.github.io/post/2016-12-17/</guid>
-      <description>
-
-&lt;p&gt;In cognitive science/psychology, Dirichlet process mixture model (DPMM) is
+      <description>&lt;p&gt;In cognitive science/psychology, Dirichlet process mixture model (DPMM) is
 considered as a rational model of category learning (Anderson, 1991; Sanborn,
 Griffiths &amp;amp; Navarro, 2010). That is, the DPMM is used to approximate how human
 learns to categorise objects.&lt;/p&gt;
@@ -26,6 +23,8 @@ learns to categorise objects.&lt;/p&gt;
 &lt;p&gt;In this post, I review the DPMM, assuming that all the features are discrete.
 The implementation in C++ can be found
 &lt;a href=&#34;https://github.com/tkngch/dirichlet-process-mixture-model&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
 
 &lt;p&gt;Suppose a learner has observed $n - 1$ objects $\{x_{1}, x_{2}, \dots, x_{n -
 1}\}$ with corresponding category labels $\{y_{1}, y_{2}, \dots, y_{n - 1}\}$.
@@ -121,8 +120,7 @@ $\ref{eqn:label}$.&lt;/p&gt;
 
 &lt;p&gt;Sanborn, A. N., Griffiths, T. L., &amp;amp; Navarro, D. J. (2010). Rational
 approximations to rational models: alternative algorithms for category
-learning. &lt;em&gt;Psychological Review, 117,&lt;/em&gt; 1144-1167.&lt;/p&gt;
-</description>
+learning. &lt;em&gt;Psychological Review, 117,&lt;/em&gt; 1144-1167.&lt;/p&gt;</description>
     </item>
     
   </channel>
