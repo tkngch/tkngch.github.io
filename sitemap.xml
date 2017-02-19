@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://tkngch.github.io/post/2017-02-19_Gradient-Descent-by-Gradient-Descent/</loc>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://tkngch.github.io/post/2017-01-29_Long-Short-Term-Memory-Network/</loc>
     <lastmod>2017-01-29T00:00:00+00:00</lastmod>
   </url>
@@ -35,25 +40,25 @@
   
   <url>
     <loc>https://tkngch.github.io/tags/deep-learning/</loc>
-    <lastmod>2017-01-29T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://tkngch.github.io/</loc>
-    <lastmod>2017-01-29T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://tkngch.github.io/tags/optimization/</loc>
-    <lastmod>2017-01-29T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://tkngch.github.io/post/</loc>
-    <lastmod>2017-01-29T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -64,7 +69,7 @@
   
   <url>
     <loc>https://tkngch.github.io/tags/time-series/</loc>
-    <lastmod>2017-01-29T00:00:00+00:00</lastmod>
+    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

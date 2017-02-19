@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Gradient Descent by Gradient Descent &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Behavioural Modeling and Data Science  </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Gradient Descent by Gradient Descent
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2017-02-19T00:00:00Z">
+                19 Feb 2017
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/deep-learning">
+                    #deep learning
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/optimization">
+                    #optimization
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/time-series">
+                    #time-series
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>In this blog post, I review the 2016 NIPS paper &ldquo;learning to learn by gradient
+descent by gradient descent&rdquo; (I abbreviate as LLGG) by Andrychowicz et al.</p>
+
+<p></p>
+
+<p>Gradient descent is an iterative optimization algorithm. Consider the problem
+of minimizing an objective function $f(\theta)$. Gradient descent solves this
+problem through a sequence of updates:
+[
+    \theta_{t+1} = \theta_{t} + \alpha_{t} \; \nabla_{\theta_{t}} f
+]
+where $\nabla$ denotes gradient, $\nabla_{\theta_{t}} f = \frac{\partial
+f}{\partial \theta_{t}}$.</p>
+
+<p>In LLGG, the update $\alpha_{t} \; \nabla_{\theta_{t}} f$ is replaced with
+an output from the optimizer function $g$:
+[
+    \theta_{t+1} = \theta_{t} + g_{t}.
+]</p>
+
+<h2 id="optimizer-function">Optimizer function</h2>
+
+<p>For the optimizer function, a two-layer stack of LSTM networks is used:
+[
+\begin{align}
+    h^{(t)} &amp;= LSTM_{1}(\nabla_{\theta_{t}} f)\\<br />
+    g_{t} &amp;= LSTM_{2}(h^{(t)}).
+\end{align}
+]
+The number of dimensions for the hidden node is set at 20 in the LLGG paper.</p>
+
+<p>This optimizer function is trained at the same time, using the truncated
+back-propagation through time. When $\theta$ is updated $t$ times, the loss
+function is
+[
+    L = \sum_{s=t - T}^{t} f\left( \theta_{s} \right),
+]
+where in the LLGG paper, the truncation length $T$ is 20 or 32, depending on the
+training data.</p>
+
+<p>Then, the set of the parameters for the LSTM stack, $\phi$, is updated as follows:
+[
+    \phi_{s+1} = \phi_{s} + \alpha_{s} \, \frac{\partial L}{\partial \phi_{s}},
+]
+where $\alpha$ is given by the adaptive moment estimation algorithm, and
+[
+\begin{align}
+    \frac{\partial L}{\partial \phi_{s}}
+    &amp;= \sum_{t} \left(
+    \frac{\partial L}{\partial g_{t}}
+        \frac{\partial g_{t}}{\partial \phi_{s}}
+    + \frac{\partial L}{\partial \nabla_{\theta_{t-1}}f}
+        \frac{\partial \nabla_{\theta_{t-1}}f}{\partial \phi_{s}}
+    \right).
+\end{align}
+]
+For computational feasibility, it is assumed that
+[
+    \frac{\partial \nabla_{\theta_{t}}}{\partial \phi} = 0
+]
+so that the LSTM stack can be trained with the standard, back-propagation
+through time.</p>
+
+<p>Summing up, the training procedure is</p>
+
+<ol>
+<li>Initialise $\theta$ and $\phi$</li>
+<li>For $t = 1, 2, \dots$</li>
+<li>$\hspace{1cm}$ $L \gets 0$</li>
+<li>$\hspace{1cm}$ For $s = 1, 2, \dots, T$</li>
+<li>$\hspace{1cm}$ $\hspace{1cm}$ $L \gets L + f(\theta)$</li>
+<li>$\hspace{1cm}$ $\hspace{1cm}$ $g_{s} = m(\nabla_{\theta}f, \, \phi)$, where $m$ is the optimizer function (i.e., the stack of LSTM networks)</li>
+<li>$\hspace{1cm}$ $\hspace{1cm}$ $\theta \gets \theta + g_{s}$</li>
+<li>$\hspace{1cm}$ $\phi \gets \phi + \alpha \, \frac{\partial L}{\partial \phi}$</li>
+<li>$\hspace{1cm}$ Update $\alpha$</li>
+</ol>
+
+<p>For computational feasibility again, the optimizer function is
+<em>coordinatewise</em>: each optimizer function outputs a scaler to update each
+parameter individually. Here, the same optimizer function is used for each
+parameter.</p>
+
+<p>Though, the gradient for each parameter can vary greatly, which can be
+problematic for training the optimizer function. As a remedy, the LLGG paper
+pre-processes the input to the optimizer function:
+[
+    \nabla \rightarrow
+        \begin{cases}
+            \left( \frac{\ln \vert \nabla \vert}{p},\, sign(\nabla) \right) &amp;
+            \textrm{if } \vert \nabla \vert \geq \exp(-p)
+            \\<br />
+            \left(-1, \exp(p \, \nabla) \right) &amp;
+            \textrm{otherwise}
+        \end{cases}
+]
+where $p&gt;0$ controls how small gradients are disregarded. The LLGG paper uses
+$p=10$.</p>
+
+<h2 id="references">References</h2>
+
+<p>Andrychowicz, M., Denil, M., Gomez, S., Hoffman, M. W., et al. (2016). Learning
+to learn by gradient descent by gradient descent. <a href="https://arxiv.org/abs/1606.04474">arXiv:1606.04474
+(cs.NE)</a>. (Code is available at <a href="https://github.com/deepmind/learning-to-learn">their GitHub
+repo</a>.)</p>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2017-01-29_Long-Short-Term-Memory-Network/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next disabled">
+                <a href="#">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+

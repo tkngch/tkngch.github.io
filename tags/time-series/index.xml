@@ -10,6 +10,118 @@
     <atom:link href="https://tkngch.github.io/tags/time-series/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Gradient Descent by Gradient Descent</title>
+      <link>https://tkngch.github.io/post/2017-02-19_Gradient-Descent-by-Gradient-Descent/</link>
+      <pubDate>Sun, 19 Feb 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://tkngch.github.io/post/2017-02-19_Gradient-Descent-by-Gradient-Descent/</guid>
+      <description>&lt;p&gt;In this blog post, I review the 2016 NIPS paper &amp;ldquo;learning to learn by gradient
+descent by gradient descent&amp;rdquo; (I abbreviate as LLGG) by Andrychowicz et al.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Gradient descent is an iterative optimization algorithm. Consider the problem
+of minimizing an objective function $f(\theta)$. Gradient descent solves this
+problem through a sequence of updates:
+[
+    \theta_{t+1} = \theta_{t} + \alpha_{t} \; \nabla_{\theta_{t}} f
+]
+where $\nabla$ denotes gradient, $\nabla_{\theta_{t}} f = \frac{\partial
+f}{\partial \theta_{t}}$.&lt;/p&gt;
+
+&lt;p&gt;In LLGG, the update $\alpha_{t} \; \nabla_{\theta_{t}} f$ is replaced with
+an output from the optimizer function $g$:
+[
+    \theta_{t+1} = \theta_{t} + g_{t}.
+]&lt;/p&gt;
+
+&lt;h2 id=&#34;optimizer-function&#34;&gt;Optimizer function&lt;/h2&gt;
+
+&lt;p&gt;For the optimizer function, a two-layer stack of LSTM networks is used:
+[
+\begin{align}
+    h^{(t)} &amp;amp;= LSTM_{1}(\nabla_{\theta_{t}} f)\\&lt;br /&gt;
+    g_{t} &amp;amp;= LSTM_{2}(h^{(t)}).
+\end{align}
+]
+The number of dimensions for the hidden node is set at 20 in the LLGG paper.&lt;/p&gt;
+
+&lt;p&gt;This optimizer function is trained at the same time, using the truncated
+back-propagation through time. When $\theta$ is updated $t$ times, the loss
+function is
+[
+    L = \sum_{s=t - T}^{t} f\left( \theta_{s} \right),
+]
+where in the LLGG paper, the truncation length $T$ is 20 or 32, depending on the
+training data.&lt;/p&gt;
+
+&lt;p&gt;Then, the set of the parameters for the LSTM stack, $\phi$, is updated as follows:
+[
+    \phi_{s+1} = \phi_{s} + \alpha_{s} \, \frac{\partial L}{\partial \phi_{s}},
+]
+where $\alpha$ is given by the adaptive moment estimation algorithm, and
+[
+\begin{align}
+    \frac{\partial L}{\partial \phi_{s}}
+    &amp;amp;= \sum_{t} \left(
+    \frac{\partial L}{\partial g_{t}}
+        \frac{\partial g_{t}}{\partial \phi_{s}}
+    + \frac{\partial L}{\partial \nabla_{\theta_{t-1}}f}
+        \frac{\partial \nabla_{\theta_{t-1}}f}{\partial \phi_{s}}
+    \right).
+\end{align}
+]
+For computational feasibility, it is assumed that
+[
+    \frac{\partial \nabla_{\theta_{t}}}{\partial \phi} = 0
+]
+so that the LSTM stack can be trained with the standard, back-propagation
+through time.&lt;/p&gt;
+
+&lt;p&gt;Summing up, the training procedure is&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Initialise $\theta$ and $\phi$&lt;/li&gt;
+&lt;li&gt;For $t = 1, 2, \dots$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ $L \gets 0$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ For $s = 1, 2, \dots, T$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ $\hspace{1cm}$ $L \gets L + f(\theta)$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ $\hspace{1cm}$ $g_{s} = m(\nabla_{\theta}f, \, \phi)$, where $m$ is the optimizer function (i.e., the stack of LSTM networks)&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ $\hspace{1cm}$ $\theta \gets \theta + g_{s}$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ $\phi \gets \phi + \alpha \, \frac{\partial L}{\partial \phi}$&lt;/li&gt;
+&lt;li&gt;$\hspace{1cm}$ Update $\alpha$&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;For computational feasibility again, the optimizer function is
+&lt;em&gt;coordinatewise&lt;/em&gt;: each optimizer function outputs a scaler to update each
+parameter individually. Here, the same optimizer function is used for each
+parameter.&lt;/p&gt;
+
+&lt;p&gt;Though, the gradient for each parameter can vary greatly, which can be
+problematic for training the optimizer function. As a remedy, the LLGG paper
+pre-processes the input to the optimizer function:
+[
+    \nabla \rightarrow
+        \begin{cases}
+            \left( \frac{\ln \vert \nabla \vert}{p},\, sign(\nabla) \right) &amp;amp;
+            \textrm{if } \vert \nabla \vert \geq \exp(-p)
+            \\&lt;br /&gt;
+            \left(-1, \exp(p \, \nabla) \right) &amp;amp;
+            \textrm{otherwise}
+        \end{cases}
+]
+where $p&amp;gt;0$ controls how small gradients are disregarded. The LLGG paper uses
+$p=10$.&lt;/p&gt;
+
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;Andrychowicz, M., Denil, M., Gomez, S., Hoffman, M. W., et al. (2016). Learning
+to learn by gradient descent by gradient descent. &lt;a href=&#34;https://arxiv.org/abs/1606.04474&#34;&gt;arXiv:1606.04474
+(cs.NE)&lt;/a&gt;. (Code is available at &lt;a href=&#34;https://github.com/deepmind/learning-to-learn&#34;&gt;their GitHub
+repo&lt;/a&gt;.)&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>Long Short-Term Memory Network and Back-Propagation through Time</title>
       <link>https://tkngch.github.io/post/2017-01-29_Long-Short-Term-Memory-Network/</link>
       <pubDate>Sun, 29 Jan 2017 00:00:00 +0000</pubDate>
