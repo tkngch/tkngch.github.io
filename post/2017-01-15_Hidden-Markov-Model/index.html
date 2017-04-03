@@ -22,7 +22,7 @@
                 <a href="https://tkngch.github.io/">
                     <h1 class="colour01"> Not Much of a Blog </h1>
                     
-                    <h5 class="colour03"> Behavioural Modeling and Data Science  </h5>
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
                     
                 </a>
             </section>
@@ -67,6 +67,8 @@
     <section>
         <p>Deep learning is quite popular in sequence modelling, but this blog post
 discusses a more traditional model, a hidden Markov model.</p>
+
+<p>(Updated on 18 March 2017)</p>
 
 <p></p>
 
@@ -167,6 +169,31 @@ As we need to calculate $\alpha_{t}(i)$ for each $i = 1, 2, \dots, K$,
 the forward variable requires the order of $K^{2} T$ calculations, much less
 than our naive approach.</p>
 
+<p>The above computation of forward variable can be expressed as matrix
+multiplication. We assume $\alpha_{t}$ and $\pi$ are column vectors, and
+define $F$ as a $K \times K$ diagonal matrix with $f(y_{t} \vert
+\theta_{i})$:
+[
+    F_{t} = \begin{bmatrix}
+        f(y_{t} \vert \theta_{1}) &amp; 0 &amp; 0 &amp; \dots &amp; 0\\<br />
+        0 &amp; f(y_{t} \vert \theta_{2}) &amp; 0 &amp; \dots &amp; 0\\<br />
+        0 &amp; 0 &amp; f(y_{t} \vert \theta_{3}) &amp; \dots &amp; 0\\<br />
+        0 &amp; 0 &amp; 0 &amp; \dots &amp; f(y_{t} \vert \theta_{K})\\<br />
+    \end{bmatrix}.
+]
+Then,
+[
+    \alpha_{t} =
+        \begin{cases}
+            F_{t} \, \pi
+            &amp; \textrm{for } t = 1
+            \\<br />
+            \\<br />
+            F_{t} \, A \, \alpha_{t-1}
+            &amp; \textrm{for } t = 2, 3, \dots, T.
+        \end{cases}
+]</p>
+
 <h2 id="finding-the-sequence-of-latent-states-the-first-approach">Finding the sequence of latent states: the first approach</h2>
 
 <p>Now we consider how to find the most likely sequence of latent states, given
@@ -194,6 +221,21 @@ variable can be computed recursively
             &amp; \textrm{for } t = T.
         \end{cases}
 ]</p>
+
+<p>The above computation can be again expressed as matrix multiplications.
+Assuming that $\beta_{t}$ is a column vector,
+[
+    \beta_{t} =
+        \begin{cases}
+            F_{t} \, A&rsquo; \, \beta_{t+1}
+            &amp; \textrm{for } t = {1, 2, \dots, T - 1}
+            \\<br />
+            \\<br />
+            \mathbf{1}
+            &amp; \textrm{for } t = T,
+        \end{cases}
+]
+where $A&rsquo;$ is a transposition of $A$ and $\mathbf{1}$ is a column vector of ones.</p>
 
 <p>Then, the probability of latent state $i$ at time $t$ is given by
 [

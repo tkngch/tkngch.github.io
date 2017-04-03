@@ -457,6 +457,8 @@ post&lt;/a&gt;.&lt;/p&gt;</description>
       <description>&lt;p&gt;Deep learning is quite popular in sequence modelling, but this blog post
 discusses a more traditional model, a hidden Markov model.&lt;/p&gt;
 
+&lt;p&gt;(Updated on 18 March 2017)&lt;/p&gt;
+
 &lt;p&gt;&lt;/p&gt;
 
 &lt;p&gt;A hidden Markov model (HMM) is a model of stochastic time-series: it models a
@@ -556,6 +558,31 @@ As we need to calculate $\alpha_{t}(i)$ for each $i = 1, 2, \dots, K$,
 the forward variable requires the order of $K^{2} T$ calculations, much less
 than our naive approach.&lt;/p&gt;
 
+&lt;p&gt;The above computation of forward variable can be expressed as matrix
+multiplication. We assume $\alpha_{t}$ and $\pi$ are column vectors, and
+define $F$ as a $K \times K$ diagonal matrix with $f(y_{t} \vert
+\theta_{i})$:
+[
+    F_{t} = \begin{bmatrix}
+        f(y_{t} \vert \theta_{1}) &amp;amp; 0 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0\\&lt;br /&gt;
+        0 &amp;amp; f(y_{t} \vert \theta_{2}) &amp;amp; 0 &amp;amp; \dots &amp;amp; 0\\&lt;br /&gt;
+        0 &amp;amp; 0 &amp;amp; f(y_{t} \vert \theta_{3}) &amp;amp; \dots &amp;amp; 0\\&lt;br /&gt;
+        0 &amp;amp; 0 &amp;amp; 0 &amp;amp; \dots &amp;amp; f(y_{t} \vert \theta_{K})\\&lt;br /&gt;
+    \end{bmatrix}.
+]
+Then,
+[
+    \alpha_{t} =
+        \begin{cases}
+            F_{t} \, \pi
+            &amp;amp; \textrm{for } t = 1
+            \\&lt;br /&gt;
+            \\&lt;br /&gt;
+            F_{t} \, A \, \alpha_{t-1}
+            &amp;amp; \textrm{for } t = 2, 3, \dots, T.
+        \end{cases}
+]&lt;/p&gt;
+
 &lt;h2 id=&#34;finding-the-sequence-of-latent-states-the-first-approach&#34;&gt;Finding the sequence of latent states: the first approach&lt;/h2&gt;
 
 &lt;p&gt;Now we consider how to find the most likely sequence of latent states, given
@@ -583,6 +610,21 @@ variable can be computed recursively
             &amp;amp; \textrm{for } t = T.
         \end{cases}
 ]&lt;/p&gt;
+
+&lt;p&gt;The above computation can be again expressed as matrix multiplications.
+Assuming that $\beta_{t}$ is a column vector,
+[
+    \beta_{t} =
+        \begin{cases}
+            F_{t} \, A&amp;rsquo; \, \beta_{t+1}
+            &amp;amp; \textrm{for } t = {1, 2, \dots, T - 1}
+            \\&lt;br /&gt;
+            \\&lt;br /&gt;
+            \mathbf{1}
+            &amp;amp; \textrm{for } t = T,
+        \end{cases}
+]
+where $A&amp;rsquo;$ is a transposition of $A$ and $\mathbf{1}$ is a column vector of ones.&lt;/p&gt;
 
 &lt;p&gt;Then, the probability of latent state $i$ at time $t$ is given by
 [
