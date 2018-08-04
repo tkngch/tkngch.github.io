@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Hidden Markov Model &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Hidden Markov Model
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2017-01-15T00:00:00Z">
+                15 Jan 2017
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/optimization">
+                    #optimization
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/time-series">
+                    #time-series
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>Deep learning is quite popular in sequence modelling, but this blog post
+discusses a more traditional model, a hidden Markov model.</p>
+
+<p>(Updated on 18 March 2017)</p>
+
+<p></p>
+
+<p>A hidden Markov model (HMM) is a model of stochastic time-series: it models a
+sequence of outputs $y_{t}, \, \left( t = 1, 2, \dots, T \right)$. These outputs are
+conditioned on a sequence of latent states $z_{t} = 1, 2, \dots, K$.
+These &ldquo;hidden&rdquo; state variables are formalised with a Markov chain such that
+[
+    p(z_{t} \vert z_{t-1}, z_{t-2}, z_{t-3} \dots) = p(z_{t} \vert z_{t-1}).
+]
+This Markov chain is parameterised by a $K \times K$ transition matrix $A$.
+Here, the probability of transitioning to state $z_{t}$ from state $z_{t-1}$
+is given by $A_{z_{t}, z_{t-1}}$.</p>
+
+<p>For this Markov process, we need to define the probability of the initial
+states, which is often denoted as $\pi$:
+[
+    \pi_{i} = p(z_{1} = i).
+]</p>
+
+<p>The output $y_{t}$ at time $t$ is generated based on latent state $z_{t}$:
+[
+    p(y_{t} \vert z_{t}) = f(y_{t} \vert \theta_{z_{t}}),
+]
+where $\theta_{i}$ is a set of parameters to characterise latent state $i$, and
+the emission probability function, $f$, specifies how the output was generated.
+$f$ is often probability mass function of multinoulli distribution or
+probability density function of Gaussian distribution.</p>
+
+<p>Therefore, HMMs require specification of three parameters, $A$, $\pi$, and
+$\theta$, to model the observed data. For convenience, I use the compact
+notation:
+[
+\begin{align}
+    Y &amp;= \{y_{1}, \, y_{2}, \, \dots, y_{T}\},\\<br />
+    Z &amp;= \{z_{1}, \, z_{2}, \, \dots, z_{T}\}, \quad{and}\\<br />
+    \lambda &amp;= \{A, \, \pi, \, \theta\}.
+\end{align}
+]</p>
+
+<p>In practice, HMMs have to solve two problems:</p>
+
+<ul>
+<li><p>Given the model parameters, what is the most likely sequence of latent states?</p></li>
+
+<li><p>Given the observed data, what is the most likely parameter values?</p></li>
+</ul>
+
+<p>To solve these problems, we need to know how to calculate the likelihood of the
+observed data given the parameters.</p>
+
+<h2 id="likelihood-computation">Likelihood Computation</h2>
+
+<p>A naive approach to compute $p(Y \vert \lambda)$ is to simply integrate out $Z$:
+[
+\begin{align}
+    p(Y \vert \lambda)
+        &amp;= \int p(Y, Z \vert \lambda) \, d_{Z}\\<br />
+        &amp;= \int p(Y \vert Z, \, \lambda) \, p(Z \vert \lambda) \, d_{Z}\\<br />
+        &amp;= \int \left( \prod_{t=1}^{T} f(y_{t} \vert \theta_{z_{t}}) \right)
+        \left( p(z_{1}) \, \prod_{t=2}^{T} A_{z_{t-1}, z_{t}} \right) d_{Z}.
+\end{align}
+]
+This integration over $Z$ may not be feasible, as the above equation involves on
+the order of $2TK^{T}$ calculations. This is because at every $t = 1, 2,
+\dots, T$, there are $K$ possible latent states, resulting in $K^{T}$
+possible state sequence. In addition, for each state sequence, about $2T$
+calculations are required.</p>
+
+<p>Fortunately, a more efficient procedure exists, which is called
+<em>forward algorithm</em>. We first define the forward variable,
+[
+    \alpha_{t}(i) = p(y_{1}, y_{2}, \dots, y_{t}, z_{t} = i \vert \lambda),
+]
+which is the probability of the partial observation sequence up to time $t$ and
+latent state $i$ at time $t$.</p>
+
+<p>With this forward variable, the likelihood can be computed as
+[
+    p(Y \vert \lambda) = \sum_{i=1}^{K} \alpha_{T}(i),
+]
+where the forward variable is computed recursively:
+[
+    \alpha_{t}(i) =
+        \begin{cases}
+            \pi_{i} \, f(y_{t} \vert \theta_{i})
+            &amp; \textrm{for } t = 1
+            \\<br />
+            \\<br />
+            \left(
+                \sum_{j = 1}^{K} \alpha_{t-1}(j) \, A_{i, j}
+            \right)
+            f(y_{t} \vert \theta_{i})
+            &amp; \textrm{for } t = 2, 3, \dots, T.
+        \end{cases}
+]
+As we need to calculate $\alpha_{t}(i)$ for each $i = 1, 2, \dots, K$,
+the forward variable requires the order of $K^{2} T$ calculations, much less
+than our naive approach.</p>
+
+<p>The above computation of forward variable can be expressed as matrix
+multiplication. We assume $\alpha_{t}$ and $\pi$ are column vectors, and
+define $F$ as a $K \times K$ diagonal matrix with $f(y_{t} \vert
+\theta_{i})$:
+[
+    F_{t} = \begin{bmatrix}
+        f(y_{t} \vert \theta_{1}) &amp; 0 &amp; 0 &amp; \dots &amp; 0\\<br />
+        0 &amp; f(y_{t} \vert \theta_{2}) &amp; 0 &amp; \dots &amp; 0\\<br />
+        0 &amp; 0 &amp; f(y_{t} \vert \theta_{3}) &amp; \dots &amp; 0\\<br />
+        0 &amp; 0 &amp; 0 &amp; \dots &amp; f(y_{t} \vert \theta_{K})\\<br />
+    \end{bmatrix}.
+]
+Then,
+[
+    \alpha_{t} =
+        \begin{cases}
+            F_{t} \, \pi
+            &amp; \textrm{for } t = 1
+            \\<br />
+            \\<br />
+            F_{t} \, A \, \alpha_{t-1}
+            &amp; \textrm{for } t = 2, 3, \dots, T.
+        \end{cases}
+]</p>
+
+<h2 id="finding-the-sequence-of-latent-states-the-first-approach">Finding the sequence of latent states: the first approach</h2>
+
+<p>Now we consider how to find the most likely sequence of latent states, given
+the parameters. One simpler approach is to maximise the probability of latent
+state at each time point:
+[
+    z_{t}^{*} = \arg \max_{i} p(z_{t} = i \vert Y, \, \lambda).
+]</p>
+
+<p>To compute this probability, we define the backward variable,
+[
+    \beta_{t}(i) = p(y_{t+1}, y_{t+2}, \dots, y_{T} \vert z_{t} = i, \, \lambda),
+]
+which is the probability of the partial observation sequence from $t+1$, given
+latent state $i$ at time $t$.  As with the forward variable, the backward
+variable can be computed recursively
+[
+    \beta_{t}(i) =
+        \begin{cases}
+            \sum_{j = 1}^{K} A_{i, j} \, \beta_{t+1}(j) \, f(y_{t+1} \vert \theta_{j})
+            &amp; \textrm{for } t = {1, 2, \dots, T - 1}
+            \\<br />
+            \\<br />
+            1
+            &amp; \textrm{for } t = T.
+        \end{cases}
+]</p>
+
+<p>The above computation can be again expressed as matrix multiplications.
+Assuming that $\beta_{t}$ is a column vector,
+[
+    \beta_{t} =
+        \begin{cases}
+            F_{t} \, A&rsquo; \, \beta_{t+1}
+            &amp; \textrm{for } t = {1, 2, \dots, T - 1}
+            \\<br />
+            \\<br />
+            \mathbf{1}
+            &amp; \textrm{for } t = T,
+        \end{cases}
+]
+where $A&rsquo;$ is a transposition of $A$ and $\mathbf{1}$ is a column vector of ones.</p>
+
+<p>Then, the probability of latent state $i$ at time $t$ is given by
+[
+\begin{align}
+    p(z_{t} = i \vert Y, \, \lambda) &amp;=
+        \frac{
+            p(y_{1}, y_{2}, \dots, y_{t}, z_{t} = i \vert \lambda)
+            \,
+            p(y_{t+1}, y_{t+2}, \dots, y_{T} \vert z_{t} = i, \, \lambda)
+        }{
+            p(Y \vert \lambda)
+        }
+        \\<br />
+        &amp;=
+        \frac{
+            \alpha_{t}(i)
+            \,
+            \beta_{t}(i)
+        }{
+            p(Y \vert \lambda).
+        }
+\tag{1}\label{eq:gamma}
+\end{align}
+]
+The denominator does not depend on $z_{t}$, so we only need to consider
+[
+    p(z_{t} = i \vert Y, \, \lambda) \propto \alpha_{t}(i) \, \beta_{t}(i),
+]
+and the most likely state at time $t$ is
+[
+    \arg \max_{i} \alpha_{t}(i) \, \beta_{t}(i).
+]</p>
+
+<p>This simpler approach considers the most likely state at each time point
+independently, and thus, the resulting sequence can be very unlikely. For
+example, suppose the approach finds that the latent state is $1$ at time $t$
+and $2$ at time $t + 1$. But this estimation does not consider $A_{1, 2}$ and
+is impossible when $A_{1,2} = 0$.</p>
+
+<p><em>Viterbi algorithm</em>, we discuss next, considers multiple time points to find
+the sequence of latent states that maximise $p(Z \vert y, \, \lambda)$.</p>
+
+<h2 id="finding-the-sequence-of-latent-states-viterbi-algorithm">Finding the sequence of latent states: Viterbi algorithm</h2>
+
+<p>With the Viterbi algorithm, we sequentially compute the probability of the most
+probable state sequence which ends in latent state $i$ at time $t$,
+[
+    \delta_{t}(i) = \max_{z_{1}, z_{2}, \dots, z_{t - 1}}
+        p(z_{1}, z_{2}, \dots, z_{t - 1}, z_{t} = i, y_{1}, y_{2}, \dots, y_{t} \vert \lambda).
+]
+This probability can be computed recursively
+[
+    \delta_{t}(i) =
+        \begin{cases}
+            \pi_{i} \, f(y_{t} \vert \theta_{i})
+            &amp; \textrm{for } t = 1
+            \\<br />
+            \\<br />
+            \max_{j} \left( \delta_{t-1}(j) \, A_{j, i} \right)
+                f(y_{t} \vert \theta_{j})
+            &amp; \textrm{for } t = {2, 3, \dots, T}.
+        \end{cases}
+]</p>
+
+<p>When computing $\delta$, we store the state used at each time $t$:
+[
+    \psi_{t}(i) =
+        \begin{cases}
+            0
+            &amp; \textrm{for } t = 1
+            \\<br />
+            \\<br />
+            \arg \max_{j} \left( \delta_{t-1}(j) \, A_{j, i} \right)
+            &amp; \textrm{for } t = {2, 3, \dots, T}.
+        \end{cases}
+]
+Then, the best state sequence can be found by backtracking,
+[
+    z_{t}^{*} =
+        \begin{cases}
+            \arg \max_{j} \delta_{t-1}(j) &amp; \textrm{for } t = T
+            \\<br />
+            \\<br />
+            \psi_{t+1}(z_{t+1}^{*}) &amp; \textrm{for } t = T - 1, T - 2, \dots, 1.
+        \end{cases}
+]
+This backtracking first identifies the latent state where the most probable
+sequence ends up, $z_{T}^{*}$, and finds which latent state is most
+likely preceded. Then it repeats this backtracking till the beginning of the
+sequence.</p>
+
+<h2 id="parameter-values">Parameter values</h2>
+
+<p>There are several procedures to estimate parameters, but here, I review the
+Baum-Welch algorithm, which uses the EM algorithm to find the maximum
+likelihood estimate of the parameters.</p>
+
+<p>In order to describe the algorithm, I define the probability of being in the
+latent state $i$ at time $t$ and latent state $j$ at time $t+1$:
+[
+    \xi_{t}(i, j) = p(z_{t} = i,\, z_{t+1} = j \vert Y, \lambda).
+]
+Using the forward and backward variables,
+[
+\begin{align}
+    \xi_{t}(i, j)
+    &amp;= \frac{
+            p(z_{t} = i,\, z_{t+1} = j, \, Y \vert \lambda)
+        }{
+            p(Y \vert \lambda)
+        }
+    \\<br />
+    &amp;= \frac{
+        p(y_{1}, y_{2}, \dots, y_{t}, z_{t} = i \vert \lambda)
+        \,
+        p(z_{t+1} = j \vert z_{t} = i)
+        \,
+        p(y_{t+1} \vert z_{t+1} = j, \lambda)
+        \,
+        p(y_{t+2}, y_{t+3}, \dots, y_{T} \vert z_{t+1} = j, \, \lambda)
+        }{
+            p(Y \vert \lambda)
+        }
+    \\<br />
+    &amp;= \frac{
+            \alpha_{t}(i) \, A_{j,i} \, f(y_{t+1} \vert \theta_{j}) \, \beta_{t+1}(j)
+        }{
+            p(Y \vert \lambda)
+        }
+    \\<br />
+    &amp;= \frac{
+            \alpha_{t}(i) \, A_{j,i} \, f(y_{t+1} \vert \theta_{j}) \, \beta_{t+1}(j)
+        }{
+            \sum_{i=1}^{K}
+            \sum_{j=1}^{K}
+            \alpha_{t}(i) \, A_{j,i} \, f(y_{t+1} \vert \theta_{j}) \, \beta_{t+1}(j).
+        }
+\end{align}
+]
+Then, the probability of being in latent state $i$ at time $t$ is defined as
+[
+    \gamma_{t}(i) = \sum_{j=1}^{K} \xi_{t}(i, j).
+]
+Note that this $\gamma$ is a redifinition of Equation \ref{eq:gamma}: that is,
+[
+    \gamma_{t}(i)
+        = p(z_{t} = i \vert Y, \, \lambda)
+        =
+        \frac{
+            \alpha_{t}(i)
+            \,
+            \beta_{t}(i)
+        }{
+            p(Y \vert \lambda)
+        }
+]</p>
+
+<p>If we sum $\gamma_{t}(i)$ from $t = 1$ to $t = T -1$, we get the expected
+number of transitions from latent state $i$. If we sum $\xi_{t}(i,j)$ over
+$t$, we get the expected number of transitions from latent state $i$ to latent
+state $j$.</p>
+
+<p>Now we can update the parameters:
+[
+\begin{align}
+    \pi_{i} &amp;\gets \gamma_{1}(i)
+    \\<br />
+    a_{ij} &amp;\gets \frac{
+        \sum_{t=1}^{T-1} \xi_{t}(i, j)
+        }{
+        \sum_{t=1}^{T-1} \gamma_{t}(i)
+    }.
+\end{align}
+]</p>
+
+<p>Similarly, $\theta$ can be updated. If $f$ is the probability mass function for
+multinoulli distribution,
+[
+    \theta_{i,v} = p(y = v \vert z = i)
+    \gets \frac{
+        \sum_{t=1}^{T-1} \mathbb{1}_{y_{t} = v} \gamma_{t}(i)
+        }{
+        \sum_{t=1}^{T-1} \gamma_{t}(i)
+    }.
+]
+Here, $\mathbb{1}$ is the indicator function.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>HMMs are implemented in
+<a href="http://scikit-learn.sourceforge.net/stable/modules/hmm.html">scikit-learn</a>,
+but this scikit-learn module has been moved to a separate module
+<a href="https://github.com/hmmlearn/hmmlearn">hmmlearn</a>.  There are probably more out
+there.</p>
+
+<h2 id="references">References</h2>
+
+<p>Rabiner, L. R. (1998). A tutorial on hidden Markov models and selected
+applications in speech recognition. <em>Proceedings of The IEEE, 77,</em> 257-286.
+<a href="http://www.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/tutorial
+on hmm and applications.pdf">link to pdf</a>.</p>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2016-12-26_hierarchical-bayes/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next">
+                <a href="https://tkngch.github.io/post/2017-01-29_long-short-term-memory-network/">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+

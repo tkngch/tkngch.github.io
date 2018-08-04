@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             joint probability as a tensor &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            joint probability as a tensor
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2018-07-08T00:00:00Z">
+                8 Jul 2018
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/probability">
+                    #probability
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>In this post, I consider joint probability of discrete variables expressed as
+tensors.</p>
+
+<p></p>
+
+<p>Let us consider three discrete variables: $A \in \{0, 1, \dots, k_{A}
+- 1\}$, $B \in \{0, 1, \dots, k_{B} - 1\}$, and $C \in \{0, 1, \dots, k_{C} - 1\}$. And their joint probability is given by $p(A, B, C) = p(A) \, p(B) \, p(C \vert A, B)$.</p>
+
+<p>I parameterise probabilitities, such that $p(A)$ with a column vector with
+multinomial probability: $p(A)_{i} &gt; 0 \, \forall \, i$ and $\sum_{i}
+p(A)_{i} = 1$. The same goes for $p(B)$ and $p&copy;$. So, $p(A) \in
+\mathbb{R}^{k_{A} \times 1}$, $p(B) \in \mathbb{R}^{k_{B} \times 1}$, and $p(
+C ) \in \mathbb{R}^{k_{C} \times 1}$.</p>
+
+<p>Then, the joint probability for $A$ and $B$ is given by
+[
+    p(A, B) = p(A) \, p(B)^{T} = p(A) \otimes p(B),
+]
+where $\otimes$ indicate a tensor product. This joint probability, $p(A, B)$, is
+a $k_{A}$ by $k_{B}$ matrix. The value on the $i$th row $j$th column tells us
+the probability that $A = i$ and $B = j$.</p>
+
+<p>In graphical models (e.g., Bayesian network), the conditional probability for
+$C$ is often expressed as a table. This table usually has one row for each
+value of $C$ and one column for each combination of parent values, $A$ and $B$.
+I consider this conditional probability table can be considered as a $k_{C}$
+by $k_{A} \, k_{B}$ matrix. The conditional probability table (CPT) for $C$
+is denoted as $CPT(C \vert A, B) \in \mathbb{R}^{k_{C} \times k_{A} k_{B}}$.</p>
+
+<p>Each column in $CPT(C \vert A, B)$ is a vector of conditional probability, which
+sums to 1. The columns are organised such that the $(a-1)k_{B} + b$th column
+stores the probability for each value of $C$ when $A = a$ and $B = b$.</p>
+
+<p>Then, we can compute the marginal probability of $C$:
+[
+    \begin{align}
+        p(C )
+            &amp;= \sum_{a} \sum_{b} CPT(C \vert A = a, B = b) \, p(A = a) \, p(B = b)\\<br />
+            &amp;= CPT(C \vert A, B) \, vec(p(A, B))
+    \end{align}
+]
+where $vec$ indicates vectorization (or flattening) of a matrix, so that
+$vec(p(A, B))$ is a column vector $\mathbb{R}^{k_{A} k_{B} \times 1}$.
+Crucially, each column of $p(C \vert A, B)$ maps onto each row in $vec(p(A,
+B))$: the $(a-1)k_{B} + b$th element in $vec(p(A, B))$ stores the probability
+that $A = a$ and $B = b$</p>
+
+<p>To avoid the vectorization of matrix $p(A, B)$, I reorganise the CPT into a
+tensor, so that the element $[a, b, c]$ tells us $p(C=c \vert A=a, B=b)$.
+Note that the tensor here is zero-indexed (i.e., the first element has index
+$0$, the second element has index $1$ and so on). Then, $p(C \vert A, B) \in
+\mathbb{R}^{k_{A} \times k_{B} \times k_{C}}$.</p>
+
+<p>I also reshape the joint probability of $A$ and $B$, such that $p^{*}(A, B)
+\in \mathbb{R}^{k_{A} \times k_{B} \times 1}$. The element $[a, b, 0]$ in
+this $p^{*}(A, B)$ tells us the probability that $A = a$ and $B = b$.</p>
+
+<p>These reorganization allows us to compute the full joint probability:
+[
+    p(A, B, C) = p^{*}(A, B) \, p(C \vert A, B).
+]
+Note that here the multiplication here is based on broadcasting.</p>
+
+<p>Then we can derive the marginal probability of $C$ by integrating out $A$ and
+$B$:
+[
+    p(C ) = \sum_{a} \sum_{b} p(A=a, B=b, C).
+]
+Similarly, we can compute other joint probabilities. The joint probability of
+$A$ and $C$, for example, is given by
+[
+    p(A, C) = \sum_{b} p(A, B=b, C).
+]</p>
+
+<p>Lastly, let&rsquo;s look at the implementation in Python.</p>
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#2838b0">import</span> <span style="color:#289870">numpy</span>
+
+<span style="color:#888;font-style:italic"># let&#39;s say kA = 2</span>
+pA <span style="color:#666">=</span> numpy<span style="color:#666">.</span>array<span style="color:#888">([[</span><span style="color:#444">0.3</span><span style="color:#888">,</span> <span style="color:#444">0.7</span><span style="color:#888">]])</span><span style="color:#666">.</span>T
+
+<span style="color:#888;font-style:italic"># and kB = 3</span>
+pB <span style="color:#666">=</span> numpy<span style="color:#666">.</span>array<span style="color:#888">([[</span><span style="color:#444">0.2</span><span style="color:#888">,</span> <span style="color:#444">0.3</span><span style="color:#888">,</span> <span style="color:#444">0.5</span><span style="color:#888">]])</span><span style="color:#666">.</span>T
+
+pAB <span style="color:#666">=</span> numpy<span style="color:#666">.</span>outer<span style="color:#888">(</span>pA<span style="color:#888">,</span> pB<span style="color:#888">)</span>
+
+<span style="color:#888;font-style:italic"># conditional probability table for C, where kC = 4</span>
+<span style="color:#888;font-style:italic"># each column must sum to 1</span>
+cptCgivenAB <span style="color:#666">=</span> numpy<span style="color:#666">.</span>array<span style="color:#888">([</span>
+    <span style="color:#888">[</span><span style="color:#444">0.9</span><span style="color:#888">,</span> <span style="color:#444">0.7</span><span style="color:#888">,</span> <span style="color:#444">0.6</span><span style="color:#888">,</span> <span style="color:#444">0.4</span><span style="color:#888">,</span> <span style="color:#444">0.3</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">],</span>
+    <span style="color:#888">[</span><span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.2</span><span style="color:#888">,</span> <span style="color:#444">0.2</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">],</span>
+    <span style="color:#888">[</span><span style="color:#444">0.0</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.4</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">],</span>
+    <span style="color:#888">[</span><span style="color:#444">0.0</span><span style="color:#888">,</span> <span style="color:#444">0.0</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.1</span><span style="color:#888">,</span> <span style="color:#444">0.5</span><span style="color:#888">,</span> <span style="color:#444">0.7</span><span style="color:#888">],</span>
+<span style="color:#888">])</span>
+
+<span style="color:#888;font-style:italic"># conditional probability of C</span>
+pC <span style="color:#666">=</span> cptCgivenAB<span style="color:#666">.</span>dot<span style="color:#888">(</span>
+    <span style="color:#888;font-style:italic"># flatten the joint probability for A and B</span>
+    pAB<span style="color:#666">.</span>reshape<span style="color:#888">((</span>pA<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">]</span> <span style="color:#666">*</span> pB<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">],</span> <span style="color:#444">1</span><span style="color:#888">))</span>
+<span style="color:#888">)</span>
+
+<span style="color:#888;font-style:italic"># full joint probability</span>
+
+<span style="color:#888;font-style:italic"># reshape CPT, so that [a, b, c] element tells us probability of c given a</span>
+<span style="color:#888;font-style:italic"># and b.</span>
+pCgivenAB <span style="color:#666">=</span> numpy<span style="color:#666">.</span>rollaxis<span style="color:#888">(</span>
+    cptCgivenAB<span style="color:#666">.</span>reshape<span style="color:#888">((</span>cptCgivenAB<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">],</span> pA<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">],</span> pB<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">])),</span>
+    <span style="color:#444">0</span><span style="color:#888">,</span> <span style="color:#444">3</span>
+<span style="color:#888">)</span>
+<span style="color:#888;font-style:italic"># reshape pAB to enable broadcasting</span>
+pABreshaped <span style="color:#666">=</span> pAB<span style="color:#666">.</span>reshape<span style="color:#888">((</span>pA<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">],</span> pB<span style="color:#666">.</span>shape<span style="color:#888">[</span><span style="color:#444">0</span><span style="color:#888">],</span> <span style="color:#444">1</span><span style="color:#888">))</span>
+
+pABC <span style="color:#666">=</span> pABreshaped <span style="color:#666">*</span> pCgivenAB
+
+<span style="color:#888;font-style:italic"># axis 0 in pABC corresponds to A. So by summing out axis 0, we get the joint</span>
+<span style="color:#888;font-style:italic"># probability of B and C.</span>
+pBC <span style="color:#666">=</span> pABC<span style="color:#666">.</span><span style="color:#388038">sum</span><span style="color:#888">(</span>axis<span style="color:#666">=</span><span style="color:#444">0</span><span style="color:#888">)</span>
+
+<span style="color:#888;font-style:italic"># axis 1 in pABC corresponds to B. So to sum out A and B and to obtain the</span>
+<span style="color:#888;font-style:italic"># marginal probability for C, we specify axes 0 and 1.</span>
+pC_ <span style="color:#666">=</span> pABC<span style="color:#666">.</span><span style="color:#388038">sum</span><span style="color:#888">(</span>axis<span style="color:#666">=</span><span style="color:#888">(</span><span style="color:#444">0</span><span style="color:#888">,</span> <span style="color:#444">1</span><span style="color:#888">))</span>
+
+<span style="color:#888;font-style:italic"># axis 2 in pABC corresponds to C. If we sum out C from pABC, we get back pAB.</span>
+pAB_ <span style="color:#666">=</span> pABC<span style="color:#666">.</span><span style="color:#388038">sum</span><span style="color:#888">(</span>axis<span style="color:#666">=</span><span style="color:#444">2</span><span style="color:#888">)</span></code></pre></div>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2017-02-19_gradient-descent-by-gradient-descent/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next disabled">
+                <a href="#">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+

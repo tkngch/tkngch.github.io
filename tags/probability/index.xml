@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Probability on Not Much of a Blog</title>
+    <link>https://tkngch.github.io/tags/probability/</link>
+    <description>Recent content in Probability on Not Much of a Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-gb</language>
+    <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
+    <lastBuildDate>Sun, 08 Jul 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://tkngch.github.io/tags/probability/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>joint probability as a tensor</title>
+      <link>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</link>
+      <pubDate>Sun, 08 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</guid>
+      <description>&lt;p&gt;In this post, I consider joint probability of discrete variables expressed as
+tensors.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://tkngch.github.io/post/2017-02-19_Gradient-Descent-by-Gradient-Descent/</loc>
+    <loc>https://tkngch.github.io/post/2017-02-19_gradient-descent-by-gradient-descent/</loc>
     <lastmod>2017-02-19T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://tkngch.github.io/post/2017-01-29_Long-Short-Term-Memory-Network/</loc>
+    <loc>https://tkngch.github.io/post/2017-01-29_long-short-term-memory-network/</loc>
     <lastmod>2017-01-29T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://tkngch.github.io/post/2017-01-15_Hidden-Markov-Model/</loc>
+    <loc>https://tkngch.github.io/post/2017-01-15_hidden-markov-model/</loc>
     <lastmod>2017-01-15T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>https://tkngch.github.io/post/2016-12-26_Hierarchical-Bayes/</loc>
+    <loc>https://tkngch.github.io/post/2016-12-26_hierarchical-bayes/</loc>
     <lastmod>2016-12-26T00:00:00+00:00</lastmod>
   </url>
   
@@ -29,6 +30,11 @@
   <url>
     <loc>https://tkngch.github.io/tags/bayesian/</loc>
     <lastmod>2016-12-26T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://tkngch.github.io/categories/</loc>
     <priority>0</priority>
   </url>
   
@@ -64,6 +70,7 @@
   
   <url>
     <loc>https://tkngch.github.io/tags/</loc>
+    <lastmod>2016-12-26T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

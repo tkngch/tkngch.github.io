@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Hierarchical Bayes &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Hierarchical Bayes
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2016-12-26T00:00:00Z">
+                26 Dec 2016
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/bayesian">
+                    #Bayesian
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>Sometimes, data contain multiple entries from observation units. For example,
+researchers may be interested in effectiveness of medical treatments, and
+tested several treatments in several different cities. Then, it may make sense
+to consider that the effectiveness may be overall consistent across cities but
+slightly vary between the cities, as population characteristic may vary between
+the cities. For instance, one city may have more younger people than another.
+In these cases, hierarchical Bayes may help. In this blog post, I review
+hierarchical Bayes.</p>
+
+<p></p>
+
+<p>For the illustration purposes, let&rsquo;s say we want to fit a linear regression:
+[
+    y \sim \mathcal{N}(X \beta, \epsilon).
+]
+In the above example of medical treatments, each row in $X$ corresponds to one
+observation. Here, $X$ indexes the type of treatment received, and $y$ is a
+measure of effectiveness.</p>
+
+<p>For convenience, I make the condition on $X$ implicit in this blog post.</p>
+
+<h2 id="complete-pooling">Complete pooling</h2>
+
+<p>Before diving into hierarchical Bayes, it is useful to discuss simpler
+approaches. One approach is to ignore the possibility that the effectiveness of
+treatments may vary between the cities, and assume that the effectiveness is
+identical across the cities. This approach is called <em>complete pooling</em>.</p>
+
+<p>First, we define the prior distribution for the parameter:
+[
+    \beta \sim \mathcal{N}(\mu, \sigma).
+]
+Here, $\mu$ and $\sigma$ are hyperparameters &mdash; something you have to specify.
+How to choose hyper-parameters is a topic for another blog post.</p>
+
+<p>After specifying the prior distribution, we can optimise $\beta$ according to
+its posterior distribution:
+[
+    p(\beta \vert y) = \frac{p(\beta) \; p(y \vert \beta)}{p(y).}
+]
+The denominator, $p(y)$, is usually difficult to compute, but it does not
+depend on $\beta$, so often we just consider the unnormalised posterior:
+[
+    p(\beta \vert y) \propto p(\beta) \; p(y \vert \beta).
+]</p>
+
+<h2 id="no-pooling">No pooling</h2>
+
+<p>Another simpler approach is to acknowledge the possibility that the
+effectiveness of treatments varies between the cities and allow the
+effectiveness to vary as much as possible between the cities. Thus, this
+approach fits the model independently for each city. This approach is called
+<em>no pooling</em>.</p>
+
+<p>Here the model for the $i$th city is
+[
+    y^{(i)} \sim \mathcal{N}(X^{(i)} \beta^{(i)}, \epsilon^{(i)}).
+]</p>
+
+<p>We specify the prior as before:
+[
+    \beta^{(i)} \sim \mathcal{N}(\mu, \sigma).
+]
+And then, optimise $\beta^{(i)}$ according to the posterior $p(\beta^{(i)}
+\vert y)$.</p>
+
+<h2 id="partial-pooling-hierarchical-bayes">Partial pooling (hierarchical Bayes)</h2>
+
+<p>In some cases, it makes sense to allow the effectiveness to vary between the
+cities but also to assume that the effectiveness is somewhat consistent across
+the cities. This is where the third approach, <em>partial pooling</em> comes in. The
+partial pooling is often called hierarchical Bayes.</p>
+
+<p>As before, let&rsquo;s say the model for the $i$th city is
+[
+    y^{(i)} \sim X^{(i)} \beta^{(i)} + \epsilon^{(i)},
+]
+and the prior is
+[
+    \beta^{(i)} \sim \mathcal{N}(\mu, \sigma).
+]</p>
+
+<p>The trick is to treat $\mu$ and $\sigma$ here as parameters, as opposed to
+hyperparameters. That is, we let the data to inform us of $\mu$ and $\sigma$.
+For this, we need to specify the prior for $\mu$ and $\sigma$. My usual choice is
+[
+    \mu \sim Uniform(-inf, inf)
+]
+and
+[
+    \sigma \sim Uniform(0, inf).
+]
+These are non-informative distributions. These are also improper, as their
+integral is not one. While the prior is improper, the posterior integrates to
+one, so it doesn&rsquo;t cause much practical problems.</p>
+
+<p>Then, we can work out the joint posterior distribution.
+[
+\begin{align}
+    p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma \vert y)
+        &amp;= \frac{p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma) \; p(y \vert \beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma)}{p(y)} \\<br />
+        &amp;= \frac{p(\mu, \sigma) \; p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)} \vert \mu, \sigma) \; p(y \vert \beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)})}{p(y).}
+\end{align}
+]
+As before, we often only need to consider the unnormalised posterior:
+[
+    p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma \vert y) \propto
+        p(\mu, \sigma) \; p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)} \vert \mu, \sigma) \; p(y \vert \beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}).
+]</p>
+
+<p>The overall effectiveness of treatments can be inferred by integrating out
+$\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}$ from the above equation:
+[
+    p(\mu, \sigma \vert y) =
+        \int
+            p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma \vert y)
+        d_{\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}}.
+]
+Similarly, the effectiveness for each city can be inferred by integrating out
+$\mu$ and $\sigma$:
+[
+    p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)} \vert y) =
+        \int \int
+            p(\beta^{(1)}, \beta^{(2)}, \dots \beta^{(n)}, \mu, \sigma \vert y)
+        d_{\mu} d_{\sigma}.
+]</p>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2016-12-17/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next">
+                <a href="https://tkngch.github.io/post/2017-01-15_hidden-markov-model/">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+
