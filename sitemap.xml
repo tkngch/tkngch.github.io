@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</loc>
+    <lastmod>2018-08-05T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://tkngch.github.io/post/2017-02-19_gradient-descent-by-gradient-descent/</loc>
     <lastmod>2017-02-19T00:00:00+00:00</lastmod>
   </url>
@@ -52,7 +57,7 @@
   
   <url>
     <loc>https://tkngch.github.io/</loc>
-    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
+    <lastmod>2018-08-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -64,7 +69,13 @@
   
   <url>
     <loc>https://tkngch.github.io/post/</loc>
-    <lastmod>2017-02-19T00:00:00+00:00</lastmod>
+    <lastmod>2018-08-05T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://tkngch.github.io/tags/probability/</loc>
+    <lastmod>2018-08-05T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

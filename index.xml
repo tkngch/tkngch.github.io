@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
     <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
-    <lastBuildDate>Sun, 19 Feb 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 05 Aug 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://tkngch.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Joint probability as a tensor</title>
+      <link>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</link>
+      <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</guid>
+      <description>&lt;p&gt;In this post, I consider joint probability of discrete random variables as tensors.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Gradient Descent by Gradient Descent</title>
