@@ -7,10 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
     <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
-    <lastBuildDate>Sun, 05 Aug 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 12 Aug 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://tkngch.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Belief propagation</title>
+      <link>https://tkngch.github.io/post/2018-08-12_belief-propagation/</link>
+      <pubDate>Sun, 12 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://tkngch.github.io/post/2018-08-12_belief-propagation/</guid>
+      <description>&lt;p&gt;Belief propagation, also known as sum-product algorithm, is an inference framework. In the context of Bayesian networks, this algorithm is often used to compute the marginal probability distribution. In this post, I walk through the computations involved in the belief propagation.&lt;/p&gt;
+
+&lt;p&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Joint probability as a tensor</title>

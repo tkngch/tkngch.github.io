@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Probability on Not Much of a Blog</title>
-    <link>https://tkngch.github.io/tags/probability/</link>
-    <description>Recent content in Probability on Not Much of a Blog</description>
+    <title>Inference on Not Much of a Blog</title>
+    <link>https://tkngch.github.io/tags/inference/</link>
+    <description>Recent content in Inference on Not Much of a Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-gb</language>
     <copyright>&amp;copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.</copyright>
     <lastBuildDate>Sun, 12 Aug 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://tkngch.github.io/tags/probability/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://tkngch.github.io/tags/inference/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,17 +19,6 @@
       
       <guid>https://tkngch.github.io/post/2018-08-12_belief-propagation/</guid>
       <description>&lt;p&gt;Belief propagation, also known as sum-product algorithm, is an inference framework. In the context of Bayesian networks, this algorithm is often used to compute the marginal probability distribution. In this post, I walk through the computations involved in the belief propagation.&lt;/p&gt;
-
-&lt;p&gt;&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Joint probability as a tensor</title>
-      <link>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</link>
-      <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
-      
-      <guid>https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/</guid>
-      <description>&lt;p&gt;In this post, I consider joint probability of discrete random variables as tensors.&lt;/p&gt;
 
 &lt;p&gt;&lt;/p&gt;</description>
     </item>

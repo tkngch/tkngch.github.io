@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Belief propagation &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Belief propagation
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2018-08-12T00:00:00Z">
+                12 Aug 2018
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/inference">
+                    #inference
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/probability">
+                    #probability
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>Belief propagation, also known as sum-product algorithm, is an inference framework. In the context of Bayesian networks, this algorithm is often used to compute the marginal probability distribution. In this post, I walk through the computations involved in the belief propagation.</p>
+
+<p></p>
+
+<p>In the belief propagation, a message is passed from a node to a factor and from a factor to a node. The message passed from node $x_{i}$ to factor $f_{j}$ is the product of messages $x_{i}$ receives from other factors:
+[
+    \mu_{x_{i} \rightarrow f_{j}} = \prod_{\substack{k \in ne(x_{i}) \\\ k \neq j}} \mu_{f_{k} \rightarrow x_{i}},
+]
+where $ne(x_{i})$ is an index of neighbouring factors.  And the message passed from factor $f_{j}$ to node $x_{i}$ is the product of messages $f_{j}$ receives from other nodes, multiplied by the factor, and summed over the other nodes than $x_{i}$:
+[
+    \mu_{f_{j} \rightarrow x_{i}}
+        = \int
+            \left(\prod_{\substack{k \in ne(f_{j}) \\\ k \neq i}} \mu_{x_{k} \rightarrow f_{j}} \right) \,
+            f_{j}(x) \,
+            d x_{l} \, _{(l = 1, \dots, n. \, l \neq i)}.
+]</p>
+
+<p>These equations may be opaque, so I walk through an example below.</p>
+
+<h1 id="example">Example</h1>
+
+<p><img src="/2018-08-12/beliefPropagation01.png#floatleft" alt="Example Bayesian network" /></p>
+
+<p>Consider the network on the left with five nodes.  The joint probability is
+given by
+[
+    p(x_{1}, x_{2}, x_{3}, x_{4}, x_{5}) =
+    p(x_{1}) \, p(x_{2}) \, p(x_{3} \vert x_{1}, x_{2}) \,
+    p(x_{4} \vert x_{3}) \, p(x_{5} \vert x_{3}).
+]</p>
+
+<p>This directed network is first re-expressed as a factor graph.</p>
+
+<div style="clear:both;"></div>
+
+<p><img src="/2018-08-12/beliefPropagation02.png#floatleft" alt="Example factor graph" /></p>
+
+<p>The factor graph on the left represents
+[
+    f_{A}(x_{1}) \, f_{B}(x_{2}) \,
+    f_{C}(x_{1}, x_{2}, x_{3}) \,
+    f_{D}(x_{3}, x_{4}) \,
+    f_{E}(x_{3}, x_{5}),
+]
+where
+[
+\begin{align}
+    f_{A}(x_{1}) &amp;= p(x_{1}),\\<br />
+    f_{B}(x_{2}) &amp;= p(x_{2}),\\<br />
+    f_{C}(x_{1}, x_{2}, x_{3}) &amp;= p(x_{3} \vert x_{1}, x_{2}),\\<br />
+    f_{D}(x_{3}, x_{4}) &amp;= p(x_{4} \vert x_{3}), \quad{and}\\<br />
+    f_{E}(x_{3}, x_{5}) &amp;= p(x_{5} \vert x_{3}).
+\end{align}
+]</p>
+
+<p>Then, the marginal probability is given by, for example,
+[
+\begin{align}
+    p(x_{3})
+    &amp;= \int
+        f_{A}(x_{1}) \, f_{B}(x_{2}) \, f_{C}(x_{1}, x_{2}, x_{3}) \,
+        f_{D}(x_{3}, x_{4}) \, f_{E}(x_{3}, x_{5}) \,
+    d x_{1} x_{2} x_{4} x_{5} \\<br />
+    &amp;= \int
+        f_{A}(x_{1}) \, f_{B}(x_{2}) \, f_{C}(x_{1}, x_{2}, x_{3}) \,
+    d x_{1} x_{2} \,
+    \int
+        f_{D}(x_{3}, x_{4})
+    d x_{4} \,
+    \int
+        f_{E}(x_{3}, x_{5}) \,
+    d x_{5}. \quad \quad (1)
+\end{align}
+]
+Belief propagation computes the three integrals above step by step by passing
+<em>messages</em> from a factor to a node and from a node to a factor.</p>
+
+<div style="clear:both;"></div>
+
+<h2 id="step-1">Step 1</h2>
+
+<p><img src="/2018-08-12/beliefPropagation03.png#floatleft" alt="Step1" /></p>
+
+<p>We start with the factors connected to only one node (those $f$ which
+accepts only one variable as an input). The message passed from the factor
+$f_{A}$ to the node $x_{1}$ is given by
+[
+    \mu_{f_{A} \rightarrow x_{1}} = f_{A}(x_{1}) = p(x_{1}).
+]
+Similarly, the message from $f_{B}$ to $x_{2}$ is
+[
+    \mu_{f_{B} \rightarrow x_{2}} = f_{B}(x_{2}) = p(x_{2}).
+]</p>
+
+<p>Now that we passed the message to $x_{1}$ and $x_{2}$, these messages are passed down:
+[
+\begin{align}
+    \mu_{x_{1} \rightarrow f_{C}} &amp;= \mu_{f_{A} \rightarrow x_{1}} = f_{A}(x_{1}) = p(x_{1}), \quad{and}\\<br />
+    \mu_{x_{2} \rightarrow f_{C}} &amp;= \mu_{f_{B} \rightarrow x_{2}} = f_{B}(x_{2}) = p(x_{2}).
+\end{align}
+]</p>
+
+<p>The messages are further passed:
+[
+\begin{align}
+    \mu_{f_{C} \rightarrow x_{3}}
+        &amp;= \int \mu_{x_{1} \rightarrow f_{C}} \, \mu_{x_{2} \rightarrow f_{C}} \, f_{C}(x_{1}, x_{2}, x_{3}) \, d x_{1} x_{2}\\<br />
+        &amp;= \int f_{A}(x_{1}) \, f_{B}(x_{2}) \, f_{C}(x_{1}, x_{2}, x_{3}) \, d x_{1} x_{2}\\<br />
+        &amp;= \int p(x_{1}) \, p(x_{2}) \, p(x_{3} \vert x_{1}, x_{2}) \, d x_{1} x_{2}\\<br />
+        &amp;= p(x_{3}).
+\end{align}
+]
+This is required to compute the marginal probability for $x_{3}$ (the first integral in Equation 1 above).</p>
+
+<p>The message from $x_{3}$ to $f_{D}$ is the product of messages which $x_{3}$ received from the other factors:
+[
+    \mu_{x_{3} \rightarrow f_{D}}
+        = \mu_{f_{C} \rightarrow x_{3}} \, \mu_{f_{E} \rightarrow x_{3}},
+]
+but we do not have $\mu_{f_{E} \rightarrow x_{3}}$ yet. To compute this, we move on to Step 2.</p>
+
+<div style="clear:both;"></div>
+
+<h2 id="step-2">Step 2</h2>
+
+<p><img src="/2018-08-12/beliefPropagation04.png#floatleft" alt="Step2" /></p>
+
+<p>The messages from the terminal nodes are initialized at 1.
+[
+\begin{align}
+    \mu_{x_{4} \rightarrow f_{D}} &amp;= 1\\<br />
+    \mu_{x_{5} \rightarrow f_{E}} &amp;= 1.
+\end{align}
+]</p>
+
+<p>We also pass the message from $f_{D}$ and $f_{E}$:
+[
+\begin{align}
+    \mu_{f_{D} \rightarrow x_{3}}
+        &amp;= \int \mu_{x_{4} \rightarrow f_{D}} f_{D}(x_{3}, x_{4}) d x_{4}
+        = \int f_{D}(x_{3}, x_{4}) d x_{4}
+        = \int p(x_{4} \vert x_{3}) d x_{4} = 1, \quad{and}\\<br />
+    \mu_{f_{E} \rightarrow x_{3}}
+        &amp;= \int \mu_{x_{5} \rightarrow f_{E}} f_{E}(x_{3}, x_{5}) d x_{5}
+        = \int f_{E}(x_{3}, x_{5}) d x_{5}
+        = \int p(x_{5} \vert x_{3}) d x_{5} = 1.
+\end{align}
+]
+These are also required to compute the marginal probability for $x_{3}$ (the second and third integrals in Equation 1 above). That is, the marginal probability is the product of messages the node receives:
+[
+\begin{align}
+    p(x_{3})
+        &amp;= \mu_{f_{C} \rightarrow x_{3}}
+        \, \mu_{f_{D} \rightarrow x_{3}}
+        \, \mu_{f_{E} \rightarrow x_{3}}.
+\end{align}
+]</p>
+
+<div style="clear:both;"></div>
+
+<h2 id="step-3">Step 3</h2>
+
+<p><img src="/2018-08-12/beliefPropagation05.png#floatleft" alt="Step3" /></p>
+
+<p>The message passed to $f_{C}$ is the product of messages which $x_{3}$
+received from other factors:
+[
+    \mu_{x_{3} \rightarrow f_{C}}
+        = \mu_{f_{D} \rightarrow x_{3}} \, \mu_{f_{E} \rightarrow x_{3}}
+        = 1.
+]
+Similarly,
+[
+    \mu_{x_{3} \rightarrow f_{D}}
+        = \mu_{f_{C} \rightarrow x_{3}} \, \mu_{f_{E} \rightarrow x_{3}}
+        = p(x_{3}),
+]
+and
+[
+    \mu_{x_{3} \rightarrow f_{E}}
+        = \mu_{f_{C} \rightarrow x_{3}} \, \mu_{f_{D} \rightarrow x_{3}}
+        = p(x_{3}).
+]</p>
+
+<p>The messages reach $x_{1}$ and $x_{2}$:
+[
+\begin{align}
+    \mu_{f_{C} \rightarrow x_{1}}
+        &amp;= \int \mu_{x_{3} \rightarrow f_{C}} \, \mu_{x_{2} \rightarrow f_{C}} \, f_{C}(x_{1}, x_{2}, x_{3}) \, d x_{2} x_{3}
+        = \int p(x_{2}) p(x_{3} \vert x_{1}, x_{2}) \, d x_{2} x_{3}
+        = 1
+        \quad{and}\\<br />
+    \mu_{f_{C} \rightarrow x_{2}}
+        &amp;= \int \mu_{x_{3} \rightarrow f_{C}} \, \mu_{x_{1} \rightarrow f_{C}} \, f_{C}(x_{1}, x_{2}, x_{3}) \, d x_{2} x_{3}
+        = \int p(x_{1}) p(x_{3} \vert x_{1}, x_{2}) \, d x_{1} x_{3}
+        = 1.
+\end{align}
+]</p>
+
+<p>Then, the marginal probability for $x_{1}$ is the product of the messages it
+receives:
+[
+    p(x_{1})
+        = \mu_{f_{A} \rightarrow x_{1}} \, \mu_{f_{C} \rightarrow x_{1}}.
+]
+Similarly, $x_{2}$ receives messages from factors $f_{B}$ and $f_{C}$, and thus,
+[
+    p(x_{2}) = \mu_{f_{B} \rightarrow x_{2}} \, \mu_{f_{C} \rightarrow x_{2}}.
+]</p>
+
+<p>The messages also reach $x_{4}$:
+[
+    \mu_{f_{D} \rightarrow x_{4}}
+        = \int \mu_{x_{3} \rightarrow f_{D}} \, f_{D}(x_{3}, x_{4}) \, d x_{3}
+        = \int p(x_{3}) \, p(x_{4} \vert x_{3}) \, d x_{3}
+        = p(x_{4}).
+]
+As $x_{4}$ receives the message only from $f_{D}$, it marginal probability is given by
+[
+    p(x_{4}) = \mu_{f_{D} \rightarrow x_{4}}.
+]
+Similarly,
+[
+    \mu_{f_{E} \rightarrow x_{5}}
+        = \int \mu_{x_{3} \rightarrow f_{E}} \, f_{E}(x_{3}, x_{5}) \, d x_{3}
+        = \int p(x_{3}) \, p(x_{5} \vert x_{3}) \, d x_{3}
+        = p(x_{5}),
+]
+and
+[
+    p(x_{5}) = \mu_{f_{E} \rightarrow x_{5}}.
+]</p>
+
+<div style="clear:both;"></div>
+
+<h1 id="summary">Summary</h1>
+
+<p>In the above example, the computation in Step 3 depends on the outputs from
+Steps 1 and 2, but the computation in Step 2 does not depend on the output from
+Step 1. So Steps 1 and 2 can be computed in parallel.</p>
+
+<p>Looking another way, belief propagation is a procedure to build a computational
+graph for marginal probability and to compute it. The goal here is to compute
+all the messages, and it first identifies which message can be computed and
+then computes other messages whose computation depends on already-computed
+messages.</p>
+
+<h1 id="references">References</h1>
+
+<ul>
+<li><p>Kschischang, F. R., Frey, B. J., and Loeliger, H-A. (2001).  Factor graphs
+and the sum-product algorithm. <em>IEEE Transactions on Information Theory, 47,</em>
+498-519.</p></li>
+
+<li><p>Bishop, C. (2006). Chapter 8 Graphical Models. In <em>Pattern Recognition and
+Machine Learning.</em> New York: Springer.</p></li>
+</ul>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2018-08-05_joint-probability-as-tensor/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next disabled">
+                <a href="#">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+
