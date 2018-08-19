@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+    <head>
+        <meta charset="utf-8" />
+
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+
+        <title>
+             Generalised belief propagation &middot;  Not Much of a Blog
+        </title>
+
+        <link rel="stylesheet" href="https://tkngch.github.io/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://tkngch.github.io/css/main.css" />
+        
+
+    </head>
+
+    <body class="colour04">
+        <header class="global-header">
+            <section class="header colour02Background">
+                <a href="https://tkngch.github.io/">
+                    <h1 class="colour01"> Not Much of a Blog </h1>
+                    
+                    <h5 class="colour03"> Bayesian Statistics, Behavioural Modeling, Machine Learning </h5>
+                    
+                </a>
+            </section>
+        </header>
+
+        <main class="container">
+
+
+<article>
+
+    <header class="article-title">
+        <h1 class="text-primary colour02">
+            Generalised belief propagation
+        </h1>
+
+        <div class="pull-left small article-date colour03">
+            Posted on
+            <time datetime="2018-08-19T00:00:00Z">
+                19 Aug 2018
+            </time>
+        </div>
+
+        <div class="pull-right">
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/inference">
+                    #inference
+                </a>
+            </span>
+            
+            <span class="article-tag small colour03">
+                <a href="https://tkngch.github.io//tags/probability">
+                    #probability
+                </a>
+            </span>
+            
+        </div>
+
+        <div class="clearfix"> </div>
+    </header>
+
+    <section>
+        <p>Making an inference with cyclic networks is not straightforward. Belief propagation may still be used, but it could yield incorrect inferences.  Generalised belief propagation was proposed as an improvement over belief propagation.  I walk through the generalised belief propagation with an example in this post.</p>
+
+<p></p>
+
+<p>As with the belief propagation, the generalised belief propagation passes messages.  In the belief propagation, a message is sent from a node to a factor and from a factor to a node. In the generalised belief propagation, however, a message is sent from a regions of nodes to another region of nodes.</p>
+
+<p>As with the belief propagation, we start off with constructing a factor graph. In this post, I use the example Bayesian network on the below left, and its corresponding factor graph is on the below right.</p>
+
+<p><img src="/2018-08-19/gbp01.png#floatleft" alt="Example Bayesian network" />
+<img src="/2018-08-19/gbp02.png#floatleft" alt="Example factor graph" /></p>
+
+<div style="clear:both;"></div>
+
+<p>The factor graph represents the following:
+[
+\begin{align}
+    f_{1} &amp;= p(x_{1}),\, f_{2} = p(x_{2}),\, f_{3} = p(x_{3}),\, f_{4} = p(x_{4}),\\<br />
+    f_{A} &amp;= p(x_{6} \vert x_{1}, x_{2}, x_{5}),\\<br />
+    f_{B} &amp;= p(x_{5} \vert x_{2}, x_{3}, x_{4}), \quad{and}\\<br />
+    f_{C} &amp;= p(x_{5} \vert x_{1}, x_{3}, x_{7}).
+\end{align}
+]</p>
+
+<h2 id="region-graph">Region graph</h2>
+
+<p>Then, we construct a region graph from the factor graph.  There are possibly many ways to construct a region graph, but here, I describe the cluster variation method.</p>
+
+<p><img src="/2018-08-19/gbp03.png#floatleft" alt="Example region" /></p>
+
+<p>We first identify a set of distinct large regions, such that every factor and every node is included in at least one region. These regions are called <em>outer</em> regions. Here, an outer region cannot be a subregion of another region.</p>
+
+<p>The outer regions are illustrated with the green rectangles on the left.  Region $R_{1}$, for example, contains $f_{1}$, $f_{2}$, $f_{A}$, $x_{1}$, $x_{2}$, $x_{5}$, and $x_{6}$. Here, the same factor or same node can appear multiple regions, so $x_{1}$, for example, is in regions $R_{1}$ and $R_{3}$.</p>
+
+<p>We then construct the set of sub-regions by identifying intersections between the outer regions.  These regions are called <em>inner</em> regions and illustrated as the yellow rectangles.  Regions $R_{1}$ and $R_{2}$, for example, have factor $f_{2}$ and nodes $x_{2}$ and $x_{5}$ in common, and these factor and nodes form sub-region $R_{4}$ in our example.</p>
+
+<div style="clear:both;"></div>
+
+<h2 id="belief-at-a-region">Belief at a region</h2>
+
+<p>Now that we have the region graph, we move on to consider belief at each region.  The belief at region $R_{i}$ is the product of its local factors, the messages from its parents, and the messages into descendants from other parents who are not descendants.</p>
+
+<p>Then, the belief at a region is equivalent to the joint probability of its nodes, so that $b(R_{1}) = p(x_{1}, x_{2}, x_{5}, x_{6})$. This equivalence make it possible to estimate messages, as we discuss later.</p>
+
+<p>For now, let us look at the belief in a bit more details.  Region $R_{1}$,
+for example, has no parents but $R_{4}$, $R_{5}$, and $R_{7}$ are $R_{1}$&rsquo;s
+descendants. So the belief at $R_{1}$ is the product of its local factors
+$f_{1} \, f_{2} \, f_{A}$ and the messages into the descendants
+$\mu_{R_{2} \rightarrow R_{4}} \, \mu_{R_{3} \rightarrow R_{5}} \,
+\mu_{R_{6} \rightarrow R_{7}}$:
+[
+    b(R_{1}) = f_{1} \, f_{2} \, f_{A} \, \mu_{R_{2} \rightarrow R_{4}} \, \mu_{R_{3} \rightarrow R_{5}} \, \mu_{R_{6} \rightarrow R_{7}}.
+]
+Similarly,
+[
+\begin{align}
+    b(R_{2}) &amp;= f_{2} \, f_{3} \, f_{4} f_{B} \, \mu_{R_{1} \rightarrow R_{4}} \, \mu_{R_{3} \rightarrow R_{6}} \, \mu_{R_{5} \rightarrow R_{7}} \quad{and}\\<br />
+    b(R_{3}) &amp;= f_{1} \, f_{3} \, f_{C} \, \mu_{R_{1} \rightarrow R_{5}} \, \mu_{R_{2} \rightarrow R_{6}} \, \mu_{R_{4} \rightarrow R_{7}}.
+\end{align}
+]</p>
+
+<p>Now, region $R_{4}$ has two parents $R_{1}$ and $R_{2}$, so its belief includes the product of messages from the parents:
+[
+    b(R_{4}) = f_{2} \, \mu_{R_{1} \rightarrow R_{4}} \, \mu_{R_{2} \rightarrow R_{4}} \, \mu_{R_{5} \rightarrow R_{7}} \, \mu_{R_{6} \rightarrow R_{7}}.
+]
+Similarly,
+[
+\begin{align}
+    b(R_{5}) &amp;= f_{1} \, \mu_{R_{1} \rightarrow R_{5}} \, \mu_{R_{3} \rightarrow R_{5}} \, \mu_{R_{4} \rightarrow R_{7}} \, \mu_{R_{6} \rightarrow R_{7}} \quad{and}\\<br />
+    b(R_{6}) &amp;= f_{3} \, \mu_{R_{2} \rightarrow R_{6}} \, \mu_{R_{3} \rightarrow R_{6}} \, \mu_{R_{4} \rightarrow R_{7}} \, \mu_{R_{5} \rightarrow R_{7}}
+\end{align}
+]</p>
+
+<p>Lastly, the belief at $R_{7}$ is given by
+[
+    b(R_{7}) = \mu_{R_{4} \rightarrow R_{7}} \, \mu_{R_{5} \rightarrow R_{7}} \, \mu_{R_{6} \rightarrow R_{7}}.
+]</p>
+
+<h2 id="iterative-estimation-of-messages">Iterative estimation of messages</h2>
+
+<p>The beliefs and the messages, defined above, are somewhat circular, in a sense
+that computation of all the messages depends on other messages, and no single
+message is not solvable as it is.  So instead of solving analytically, we
+initialise the messages with some value and iteratively update the messages.</p>
+
+<p>When updating, we take advantage of the equivalence between the belief at a
+region and the joint probability of its nodes.  For example,
+[
+    b(R_{7}) = p(x_{5}) \textrm{, and also, }
+    p(x_{5}) = \int p(x_{2}, \, x_{5}) \, d x_{2} = \int b(R_{4}) \, d x_{2}.
+]
+Then,
+[
+\begin{align}
+    b(R_{7}) &amp;= \int b(R_{4}) \, d x_{2}\\<br />
+    \iff \mu_{R_{4} \rightarrow R_{7}} \, \mu_{R_{5} \rightarrow R_{7}} \, \mu_{R_{6} \rightarrow R_{7}}
+    &amp;= \int f_{2} \, \mu_{R_{1} \rightarrow R_{4}} \, \mu_{R_{2} \rightarrow R_{4}} \, \mu_{R_{5} \rightarrow R_{7}} \, \mu_{R_{6} \rightarrow R_{7}} \, d x_{2}\\<br />
+    \iff \mu_{R_{4} \rightarrow R_{7}}
+    &amp;= \int f_{2} \, \mu_{R_{1} \rightarrow R_{4}} \, \mu_{R_{2} \rightarrow R_{4}} \, d x_{2}.
+\end{align}
+]
+So the update for $\mu_{R_{4} \rightarrow R_{7}}$ is defined as
+[
+    \mu_{R_{4} \rightarrow R_{7}}^{(new)}
+        :=
+        \mu_{R_{4} \rightarrow R_{7}}^{(old)}
+        +
+        \alpha \left(
+        \int f_{2} \, \mu_{R_{1} \rightarrow R_{4}}^{(old)} \, \mu_{R_{2} \rightarrow R_{4}}^{(old)} \, d x_{2}
+        -
+        \mu_{R_{4} \rightarrow R_{7}}^{(old)}
+        \right),
+]
+where $\alpha$ is the learning rate.</p>
+
+<p>Similarly by solving $b(R_{7}) = \int b(R_{5}) \, d x_{1}$, we obtain
+[
+    \mu_{R_{5} \rightarrow R_{7}}^{(new)}
+        :=
+        \mu_{R_{5} \rightarrow R_{7}}^{(old)}
+        +
+        \alpha \left(
+        \int f_{1} \, \mu_{R_{1} \rightarrow R_{5}}^{(old)} \, \mu_{R_{3} \rightarrow R_{5}}^{(old)} \, d x_{1}
+        -
+        \mu_{R_{5} \rightarrow R_{7}}^{(old)}
+        \right),
+]
+and by solving $b(R_{7}) = \int b(R_{6}) \, d x_{3}$, we get
+[
+    \mu_{R_{6} \rightarrow R_{7}}^{(new)}
+        :=
+        \mu_{R_{6} \rightarrow R_{7}}^{(old)}
+        +
+        \alpha \left(
+        \int f_{3} \, \mu_{R_{2} \rightarrow R_{6}}^{(old)} \, \mu_{R_{3} \rightarrow R_{6}}^{(old)} \, d x_{1}
+        -
+        \mu_{R_{6} \rightarrow R_{7}}^{(old)}
+        \right).
+]</p>
+
+<p>The updates for the other messages are obtained in a similar manner. For
+example from $b(R_{4}) = p(x_{2}, x_{5}) = \int b(R_{1}) \, d x_{1} d
+x_{6}$, we get
+[
+    \mu_{R_{1} \rightarrow R_{4}}^{(new)}
+    \mu_{R_{5} \rightarrow R_{7}}^{(new)}
+        :=
+    \mu_{R_{1} \rightarrow R_{4}}^{(old)}
+    \mu_{R_{5} \rightarrow R_{7}}^{(old)}
+        +
+        \alpha \left(
+        \int f_{1} \, f_{A} \, \mu_{R_{3} \rightarrow R_{5}}^{(old)} \, d x_{1} d x_{6}
+        -
+    \mu_{R_{1} \rightarrow R_{4}}^{(old)}
+    \mu_{R_{5} \rightarrow R_{7}}^{(old)}
+        \right).
+]</p>
+
+<p>Our example region graph has nine edges, so we have nine update equations in
+total. Their derivations are straightforward and much the same as above, so
+they should be easily obtained.</p>
+
+<h1 id="references">References</h1>
+
+<ul>
+<li>Yedidia, J. S., Freeman, W. T., and Weiss, Y. (2004). Constructing
+free-energy approximations and generalized belief propagation algorithms.
+<em>IEEE Transactions on Information Theory, 51,</em> 2282-2312.</li>
+</ul>
+    </section>
+
+    <footer>
+        <ul class="pager">
+            
+            <li class="previous">
+                <a href="https://tkngch.github.io/post/2018-08-12_belief-propagation/">
+                    <span aria-hidden="true">&larr;</span> Older
+                </a>
+            </li>
+            
+
+            
+            <li class="next disabled">
+                <a href="#">
+                    Newer <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+            
+        </ul>
+    </footer>
+
+</article>
+
+        </main>
+
+        <footer class="container global-footer">
+            <div class="pull-left small colour03">
+                &copy; 2016 Takao Noguchi. Creative Commons Attribution 4.0 International License.
+            </div>
+        </footer>
+
+        <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                    inlineMath: [['$','$'], ['\\(','\\)']],
+                    displayMath: [['$$','$$'], ['\[','\]']]
+                }
+            });
+        </script>
+
+    </body>
+</html>
+
